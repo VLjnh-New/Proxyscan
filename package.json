@@ -1,0 +1,13 @@
+{
+  "name": "proxy-scanner",
+  "version": "2.0.0",
+  "description": "Proxy Scanner & Tester — Node.js Web App",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.17.1"
+  }
+}

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proxy Scanner</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <div class="brand">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        <span>ProxyScan</span>
+      </div>
+      <button class="nav-btn active" data-tab="test">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Test
+      </button>
+      <button class="nav-btn" data-tab="scan">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Scan
+      </button>
+      <button class="nav-btn" data-tab="auto">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        Auto
+      </button>
+      <button class="nav-btn" data-tab="api">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        API
+      </button>
+      <div class="schedule-info">
+        <div class="sched-row">
+          <span class="sched-dot" id="sched-dot"></span>
+          <span class="sched-label" id="sched-label">Đang tải…</span>
+        </div>
+        <div class="sched-next" id="sched-next"></div>
+        <button class="sched-push-btn" id="btn-push-github" title="Push lên GitHub ngay">⬆ Push GitHub</button>
+      </div>
+      <div class="credit">By VLjnh</div>
+    </nav>
+
+    <!-- Main -->
+    <main id="main">
+
+      <!-- ── Test Tab ── -->
+      <section id="tab-test" class="tab active">
+        <div class="page-header">
+          <h1>Proxy Test</h1>
+          <span id="test-status" class="badge badge-idle">Idle</span>
+        </div>
+
+        <div class="card params-card">
+          <div class="field-row">
+            <div class="field">
+              <label>Host</label>
+              <input id="test-host" type="text" placeholder="127.0.0.1" />
+            </div>
+            <div class="field narrow">
+              <label>Port</label>
+              <input id="test-port" type="number" placeholder="7890" min="1" max="65535" />
+            </div>
+            <div class="field narrow">
+              <label>Protocol</label>
+              <select id="test-proto">
+                <option value="HTTP">HTTP</option>
+                <option value="SOCKS5">SOCKS5</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field narrow">
+              <label>Times</label>
+              <input id="test-count" type="number" value="10" min="1" max="500" />
+            </div>
+            <div class="field narrow">
+              <label>Timeout (ms)</label>
+              <input id="test-timeout" type="number" value="3000" min="200" />
+            </div>
+            <div class="field narrow">
+              <label>Interval (ms)</label>
+              <input id="test-interval" type="number" value="500" min="0" />
+            </div>
+          </div>
+          <div class="action-row">
+            <button id="btn-test-start" class="btn btn-primary">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Test
+            </button>
+            <button id="btn-test-stop" class="btn btn-danger" disabled>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              Stop
+            </button>
+            <button id="btn-test-clear" class="btn btn-ghost">Clear</button>
+            <div class="stats-row" id="test-stats">
+              <span class="stat"><span class="stat-label">Min</span><span id="s-min">--</span></span>
+              <span class="stat"><span class="stat-label">Max</span><span id="s-max">--</span></span>
+              <span class="stat"><span class="stat-label">Avg</span><span id="s-avg">--</span></span>
+              <span class="stat"><span class="stat-label">Loss</span><span id="s-loss">0/0</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card log-card">
+          <div class="log-toolbar">
+            <span class="log-title">Log</span>
+            <button class="icon-btn" id="btn-copy-log" title="Copy">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+          <div id="test-log" class="log-area"></div>
+        </div>
+      </section>
+
+      <!-- ── Scan Tab ── -->
+      <section id="tab-scan" class="tab">
+        <div class="page-header">
+          <h1>Network Scan</h1>
+          <span id="scan-status" class="badge badge-idle">Idle</span>
+        </div>
+
+        <div class="card params-card">
+          <div class="field-row">
+            <div class="field">
+              <label>Network</label>
+              <input id="scan-network" type="text" placeholder="192.168.1.0" />
+            </div>
+            <div class="field narrow">
+              <label>Subnet Mask</label>
+              <input id="scan-mask" type="text" value="255.255.255.0" />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field narrow">
+              <label>Port From</label>
+              <input id="scan-port-start" type="number" value="1" min="1" max="65535" />
+            </div>
+            <div class="field narrow">
+              <label>Port To</label>
+              <input id="scan-port-end" type="number" value="9999" min="1" max="65535" />
+            </div>
+            <div class="field narrow">
+              <label>SYN Threads</label>
+              <input id="scan-concurrent" type="number" value="300" min="1" max="5000" />
+            </div>
+            <div class="field narrow">
+              <label>SYN Timeout (ms)</label>
+              <input id="scan-syn-timeout" type="number" value="500" min="50" />
+            </div>
+            <div class="field narrow">
+              <label>Verify Threads</label>
+              <input id="scan-ver-concurrent" type="number" value="50" min="1" />
+            </div>
+          </div>
+          <div class="action-row">
+            <button id="btn-scan-start" class="btn btn-primary">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Start Scan
+            </button>
+            <button id="btn-scan-stop" class="btn btn-danger" disabled>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              Stop
+            </button>
+            <button id="btn-scan-clear" class="btn btn-ghost">Clear</button>
+            <div class="stats-row">
+              <span class="stat"><span class="stat-label">Scanned</span><span id="sc-scanned">0</span></span>
+              <span class="stat"><span class="stat-label">Open</span><span id="sc-open">0</span></span>
+              <span class="stat"><span class="stat-label">Found</span><span id="sc-found">0</span></span>
+              <span class="stat"><span class="stat-label">Speed</span><span id="sc-speed">0/s</span></span>
+            </div>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="progress-wrap" id="scan-progress-wrap">
+            <div class="progress-bar">
+              <div id="scan-progress-fill" class="progress-fill" style="width:0%"></div>
+            </div>
+            <span id="scan-progress-label" class="progress-label">0 / 0</span>
+          </div>
+        </div>
+
+        <!-- Scan log -->
+        <div class="card log-card" style="max-height:140px">
+          <div id="scan-log" class="log-area"></div>
+        </div>
+
+        <!-- Results table -->
+        <div class="card table-card">
+          <div class="table-toolbar">
+            <span class="table-title">Results <span id="result-count" class="count-badge">0</span></span>
+            <input id="scan-filter" type="text" placeholder="Filter by IP, port, protocol…" class="filter-input" />
+            <button class="icon-btn" id="btn-export" title="Export CSV">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+          </div>
+          <div class="table-wrap">
+            <table id="result-table">
+              <thead>
+                <tr>
+                  <th class="col-num">#</th>
+                  <th data-sort="ip">IP</th>
+                  <th data-sort="port">Port</th>
+                  <th data-sort="protocol">Protocol</th>
+                  <th data-sort="latency">Latency</th>
+                  <th>Test</th>
+                </tr>
+              </thead>
+              <tbody id="result-tbody"></tbody>
+            </table>
+            <div id="table-empty" class="table-empty">No proxies found yet</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Auto Tab ── -->
+      <section id="tab-auto" class="tab">
+        <div class="page-header">
+          <h1>Auto Mode</h1>
+          <span id="auto-status" class="badge badge-idle">Idle</span>
+        </div>
+
+        <!-- Mode selector -->
+        <div class="auto-mode-bar">
+          <button class="mode-btn active" data-mode="scan">Auto Scan</button>
+          <button class="mode-btn" data-mode="recheck">Recheck Store</button>
+        </div>
+
+        <!-- ── AUTO SCAN panel ── -->
+        <div id="auto-scan-panel">
+          <!-- Settings row -->
+          <div class="card params-card">
+            <div class="field-row">
+              <div class="field narrow"><label>Port From</label><input id="auto-port-start" type="number" value="7000" min="1" max="65535"/></div>
+              <div class="field narrow"><label>Port To</label><input id="auto-port-end" type="number" value="9999" min="1" max="65535"/></div>
+              <div class="field narrow"><label>SYN Threads</label><input id="auto-concurrent" type="number" value="500" min="1" max="5000"/></div>
+              <div class="field narrow"><label>SYN Timeout (ms)</label><input id="auto-syn-timeout" type="number" value="400" min="50"/></div>
+              <div class="field narrow"><label>Verify Threads</label><input id="auto-ver-concurrent" type="number" value="60" min="1"/></div>
+            </div>
+            <div class="action-row">
+              <button id="btn-auto-start" class="btn btn-primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Start Auto
+              </button>
+              <button id="btn-auto-stop" class="btn btn-danger" disabled>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                Stop
+              </button>
+              <div class="stats-row">
+                <span class="stat"><span class="stat-label">Range</span><span id="auto-range-cur">0</span>/<span id="auto-range-total">0</span></span>
+                <span class="stat"><span class="stat-label">Found</span><span id="auto-found">0</span></span>
+                <span class="stat"><span class="stat-label">Speed</span><span id="auto-speed">0/s</span></span>
+              </div>
+            </div>
+            <!-- Current range progress -->
+            <div class="progress-wrap" id="auto-progress-wrap">
+              <div class="progress-bar">
+                <div id="auto-progress-fill" class="progress-fill" style="width:0%"></div>
+              </div>
+              <span id="auto-progress-label" class="progress-label">–</span>
+            </div>
+          </div>
+
+          <!-- Range list -->
+          <div class="card">
+            <div class="table-toolbar">
+              <span class="table-title">IP Ranges <span class="count-badge" id="range-count">0</span></span>
+              <button class="btn btn-ghost" id="btn-add-range" style="padding:5px 12px;font-size:12px">+ Add</button>
+              <button class="btn btn-ghost" id="btn-reset-ranges" style="padding:5px 12px;font-size:12px">Reset</button>
+            </div>
+            <div class="table-wrap" style="max-height:300px">
+              <table id="range-table">
+                <thead><tr>
+                  <th style="width:30px"></th>
+                  <th>Label</th>
+                  <th>Network</th>
+                  <th>Mask</th>
+                  <th style="width:36px"></th>
+                </tr></thead>
+                <tbody id="range-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Auto log -->
+          <div class="card log-card" style="max-height:160px">
+            <div class="log-toolbar"><span class="log-title">Activity Log</span></div>
+            <div id="auto-log" class="log-area"></div>
+          </div>
+        </div>
+
+        <!-- ── RECHECK panel ── -->
+        <div id="auto-recheck-panel" style="display:none">
+          <div class="card params-card">
+            <div class="field-row">
+              <div class="field narrow"><label>Timeout (ms)</label><input id="recheck-timeout" type="number" value="5000" min="500"/></div>
+              <div class="field narrow"><label>Threads</label><input id="recheck-concurrent" type="number" value="50" min="1" max="500"/></div>
+            </div>
+            <div class="action-row">
+              <button id="btn-recheck-start" class="btn btn-primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                Recheck All
+              </button>
+              <button id="btn-recheck-stop" class="btn btn-danger" disabled>Stop</button>
+              <div class="stats-row">
+                <span class="stat"><span class="stat-label">Checked</span><span id="rc-checked">0</span></span>
+                <span class="stat"><span class="stat-label">Alive</span><span id="rc-alive" style="color:var(--success)">0</span></span>
+                <span class="stat"><span class="stat-label">Removed</span><span id="rc-removed" style="color:var(--danger)">0</span></span>
+              </div>
+            </div>
+            <div class="progress-wrap">
+              <div class="progress-bar"><div id="rc-progress-fill" class="progress-fill" style="width:0%"></div></div>
+              <span id="rc-progress-label" class="progress-label">0 / 0</span>
+            </div>
+          </div>
+          <div class="card log-card" style="max-height:220px">
+            <div class="log-toolbar"><span class="log-title">Recheck Log</span></div>
+            <div id="recheck-log" class="log-area"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── API Tab ── -->
+      <section id="tab-api" class="tab">
+        <div class="page-header">
+          <h1>Proxy API</h1>
+          <span id="api-total-badge" class="badge badge-idle">0 proxies</span>
+        </div>
+
+        <!-- Stats -->
+        <div class="api-stats-grid">
+          <div class="api-stat-card">
+            <div class="api-stat-value" id="api-stat-total">0</div>
+            <div class="api-stat-label">Total</div>
+          </div>
+          <div class="api-stat-card">
+            <div class="api-stat-value" style="color:#64b5f6" id="api-stat-http">0</div>
+            <div class="api-stat-label">HTTP</div>
+          </div>
+          <div class="api-stat-card">
+            <div class="api-stat-value" style="color:var(--primary)" id="api-stat-socks5">0</div>
+            <div class="api-stat-label">SOCKS5</div>
+          </div>
+          <div class="api-stat-card">
+            <div class="api-stat-value" style="color:var(--success)" id="api-stat-latency">-- ms</div>
+            <div class="api-stat-label">Avg Latency</div>
+          </div>
+        </div>
+
+        <!-- Endpoints -->
+        <div class="card">
+          <div class="endpoint-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            API Endpoints
+          </div>
+          <div class="endpoint-list">
+            <div class="endpoint-row">
+              <span class="method-badge get">GET</span>
+              <code class="endpoint-url" id="ep-all">/api/proxies</code>
+              <span class="ep-desc">All proxies — JSON</span>
+              <button class="copy-btn" data-ep="all">Copy</button>
+              <a class="open-btn" id="ep-all-link" href="/api/proxies" target="_blank">Open ↗</a>
+            </div>
+            <div class="endpoint-row">
+              <span class="method-badge get">GET</span>
+              <code class="endpoint-url" id="ep-http">/api/proxies/http</code>
+              <span class="ep-desc">HTTP only</span>
+              <button class="copy-btn" data-ep="http">Copy</button>
+              <a class="open-btn" id="ep-http-link" href="/api/proxies/http" target="_blank">Open ↗</a>
+            </div>
+            <div class="endpoint-row">
+              <span class="method-badge get">GET</span>
+              <code class="endpoint-url" id="ep-socks5">/api/proxies/socks5</code>
+              <span class="ep-desc">SOCKS5 only</span>
+              <button class="copy-btn" data-ep="socks5">Copy</button>
+              <a class="open-btn" id="ep-socks5-link" href="/api/proxies/socks5" target="_blank">Open ↗</a>
+            </div>
+            <div class="endpoint-row">
+              <span class="method-badge get">GET</span>
+              <code class="endpoint-url" id="ep-raw">/api/proxies/raw</code>
+              <span class="ep-desc">Plain text — IP:PORT per line</span>
+              <button class="copy-btn" data-ep="raw">Copy</button>
+              <a class="open-btn" id="ep-raw-link" href="/api/proxies/raw" target="_blank">Open ↗</a>
+            </div>
+            <div class="endpoint-row">
+              <span class="method-badge get">GET</span>
+              <code class="endpoint-url" id="ep-stats">/api/stats</code>
+              <span class="ep-desc">Stats JSON</span>
+              <button class="copy-btn" data-ep="stats">Copy</button>
+              <a class="open-btn" id="ep-stats-link" href="/api/stats" target="_blank">Open ↗</a>
+            </div>
+          </div>
+
+          <!-- JSON preview -->
+          <div class="json-preview-label">Response preview — <code>/api/proxies</code></div>
+          <pre id="json-preview" class="json-preview">Loading…</pre>
+        </div>
+
+        <!-- Stored proxy list -->
+        <div class="card table-card">
+          <div class="table-toolbar">
+            <span class="table-title">Stored Proxies <span id="store-count" class="count-badge">0</span></span>
+            <input id="store-filter" type="text" placeholder="Filter…" class="filter-input" />
+            <button class="btn btn-ghost" id="btn-refresh-store" style="padding:6px 12px;font-size:12px">Refresh</button>
+            <button class="btn btn-danger" id="btn-clear-store" style="padding:6px 12px;font-size:12px">Clear All</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="col-num">#</th>
+                  <th>IP</th>
+                  <th>Port</th>
+                  <th>Protocol</th>
+                  <th>Latency</th>
+                  <th>First Seen</th>
+                  <th>Last Seen</th>
+                  <th>Checks</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="store-tbody"></tbody>
+            </table>
+            <div id="store-empty" class="table-empty">No proxies in store yet — run a scan first</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Connection indicator -->
+  <div id="ws-indicator" class="ws-indicator connecting" title="WebSocket status">
+    <span class="ws-dot"></span>
+    <span id="ws-label">Connecting…</span>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
